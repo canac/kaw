@@ -15,7 +15,7 @@ fn op_stdin_line() -> Result<Option<String>> {
     if line.is_empty() {
         return Ok(None);
     }
-    line.truncate(line.trim_matches(|c| c == '\r' || c == '\n').len());
+    line.truncate(line.trim_matches(&['\r', '\n']).len());
     Ok(Some(line))
 }
 
