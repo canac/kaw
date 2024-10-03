@@ -9,3 +9,6 @@ tokio = { version = "1.40.0", features = ["full"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.16"
+
+[build-dependencies]
+deno_core = "0.311.0"

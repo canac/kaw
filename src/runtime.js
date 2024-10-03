@@ -1,11 +1,12 @@
-class StdinIterator extends Iterator {
-  next() {
+const lines = function* () {
+  while (true) {
     const line = Deno.core.ops.op_stdin_line();
     if (line === null) {
-      return { done: true };
+      return;
     }
-    return { value: line, done: false };
+    yield line;
   }
-}
+};
 
-globalThis.stdin = new StdinIterator();
+
+globalThis.stdin = lines();

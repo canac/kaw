@@ -5,6 +5,8 @@ use std::io::{stdin, stdout, BufWriter, Write};
 use std::process::exit;
 use tokio::runtime::Builder;
 
+static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/KAW_SNAPSHOT.bin"));
+
 #[op2]
 #[string]
 fn op_stdin_line() -> Result<Option<String>> {
@@ -22,6 +24,7 @@ extension!(kaw, ops = [op_stdin_line]);
 async fn execute_expression(expression: String) -> Result<()> {
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
         extensions: vec![kaw::init_ops()],
+        startup_snapshot: Some(RUNTIME_SNAPSHOT),
         ..Default::default()
     });
 
