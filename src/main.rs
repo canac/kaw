@@ -83,6 +83,6 @@ fn main() -> Result<()> {
         }
     }
 
-    eprintln!("Usage: dawk [expression]");
+    eprintln!("Usage: kaw [expression]");
     exit(1);
 }
