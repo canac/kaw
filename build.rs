@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::{env, fs};
 
 fn main() {
-    println!("cargo:rerun-if-changed=src/runtime.rs");
+    println!("cargo:rerun-if-changed=src/runtime.js");
 
     extension!(
         kaw,
