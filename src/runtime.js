@@ -9,4 +9,4 @@ const lines = function* () {
 };
 
 
-globalThis.stdin = lines();
+globalThis.stdin = globalThis.s = lines();

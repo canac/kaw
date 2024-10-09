@@ -12,6 +12,15 @@ fn test_noop() {
 }
 
 #[test]
+fn test_abbreviation() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    cmd.arg("s")
+        .write_stdin(INPUT)
+        .assert()
+        .stdout("Line 1\nLine 2\nLine 3\nLine A\nLine B\nLine C\n");
+}
+
+#[test]
 fn test_filter() {
     let mut cmd = Command::cargo_bin("kaw").unwrap();
     cmd.arg("stdin.filter(line => line.endsWith(3) || line === 'Line C')")
