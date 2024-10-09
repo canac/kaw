@@ -73,3 +73,17 @@ fn test_non_array() {
         .assert()
         .stdout("[object Object]\n");
 }
+
+#[test]
+fn test_no_args() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    cmd.assert().stderr("Usage: kaw [expression]\n");
+}
+
+#[test]
+fn test_extra_arg() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    cmd.args(["stdin", "-"])
+        .assert()
+        .stderr("Usage: kaw [expression]\n");
+}
