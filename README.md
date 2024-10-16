@@ -20,10 +20,10 @@ cat input.txt | kaw 'stdin.filter(line => line.length > 10)'
 cat input.txt | kaw 's.filter(line => line.length > 10)'
 
 # Print the line number with along with each line
-cat input.txt | kaw 's.map((line, index) => `${index + 1} ${line}`)'
+cat input.txt | kaw 'stdin.map((line, index) => `${index + 1} ${line}`)'
 
 # Chain multiple transformations together
-cat input.txt | kaw 's.filter(line => line.length > 10).map((line, index) => `${index + 1} ${line}`)'
+cat input.txt | kaw 'stdin.filter(line => line.length > 10).map((line, index) => `${index + 1} ${line}`)'
 ```
 
 ## Expressions
@@ -36,28 +36,28 @@ If the expression is iterable, `kaw` prints one line to stdout for each item. If
 
 ```sh
 # Print every line that starts with a #
-cat input.txt | kaw 's.filter(line => /^#/.test(line))'
+cat input.txt | kaw 'stdin.filter(line => /^#/.test(line))'
 
 # Replace foo with bar in every line
-cat input.txt | kaw 's.map(line => line.replaceAll("foo", "bar"))'
+cat input.txt | kaw 'stdin.map(line => line.replaceAll("foo", "bar"))'
 
 # Print 5 lines after the first 10 lines
-cat input.txt | kaw 's.drop(10).take(5)'
+cat input.txt | kaw 'stdin.drop(10).take(5)'
 
 # Split each line into two lines
-cat input.txt | kaw 's.flatMap(line => [line.slice(0, Math.floor(line.length / 2)), line.slice(Math.floor(line.length / 2))])'
+cat input.txt | kaw 'stdin.flatMap(line => [line.slice(0, Math.floor(line.length / 2)), line.slice(Math.floor(line.length / 2))])'
 
 # Count the number of characters on all lines
-cat input.txt | kaw 's.reduce((total, line) => total + line.length, 0)'
+cat input.txt | kaw 'stdin.reduce((total, line) => total + line.length, 0)'
 
 # Reverse the lines
-cat input.txt | kaw 's.toArray().toReversed()'
+cat input.txt | kaw 'stdin.toArray().toReversed()'
 
 # Deduplicate the lines
-cat input.txt | kaw 'new Set(s).values()'
+cat input.txt | kaw 'new Set(stdin).values()'
 
 # Multiline expression (although at this point, you should probably just write a Deno or Node.js script)
-cat input.txt | kaw 'const map = new Map(); s.forEach((line) => { map.set(line, (map.get(line) ?? 0) + 1) }); map.entries().toArray().toSorted(([line1, count1], [line2, count2]) => count2 - count1).map(([line, count]) => `${count} occurrences of ${line}`)'
+cat input.txt | kaw 'const map = new Map(); stdin.forEach((line) => { map.set(line, (map.get(line) ?? 0) + 1) }); map.entries().toArray().toSorted(([line1, count1], [line2, count2]) => count2 - count1).map(([line, count]) => `${count} occurrences of ${line}`)'
 ```
 
 ## Performance
@@ -69,13 +69,13 @@ cat input.txt | kaw 'const map = new Map(); s.forEach((line) => { map.set(line, 
 base64 -i /dev/urandom | head -c 16777216 | fold -w 256 > input.txt
 
 # Transform each line with kaw
-time cat input.txt | kaw 's.map(line => line.toUpperCase())' > output.txt
+time cat input.txt | kaw 'stdin.map(line => line.toUpperCase())' > output.txt
 
 # Transform each line with awk
 time cat input.txt | awk '{ print toupper($0) }' > output.txt
 
 # Or use hyperfine for benchmarking
-hyperfine --command-name kaw 'cat input.txt | kaw "s.map(line => line.toUpperCase())"' --command-name awk 'cat input.txt | awk "{ print toupper($0) }" > output.txt'
+hyperfine --command-name kaw 'cat input.txt | kaw "stdin.map(line => line.toUpperCase())"' --command-name awk 'cat input.txt | awk "{ print toupper($0) }" > output.txt'
 ```
 
 ## License
