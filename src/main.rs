@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::significant_drop_tightening)]
+
 use deno_core::anyhow::Result;
 use deno_core::v8::{self, Local};
 use deno_core::{extension, op2, FastString, JsRuntime, ModuleSpecifier, RuntimeOptions};
@@ -9,18 +12,20 @@ static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/KAW_S
 
 #[op2]
 #[string]
+#[allow(clippy::inline_always)]
 fn op_stdin_line() -> Result<Option<String>> {
     let mut line = String::new();
     stdin().read_line(&mut line)?;
     if line.is_empty() {
         return Ok(None);
     }
-    line.truncate(line.trim_matches(&['\r', '\n']).len());
+    line.truncate(line.trim_matches(['\r', '\n']).len());
     Ok(Some(line))
 }
 
 extension!(kaw, ops = [op_stdin_line]);
 
+#[allow(clippy::future_not_send)]
 async fn execute_expression(expression: String) -> Result<()> {
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
         extensions: vec![kaw::init_ops()],
