@@ -12,3 +12,9 @@ assert_cmd = "2.0.16"
 
 [build-dependencies]
 deno_core = "0.311.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"
+strip = true
