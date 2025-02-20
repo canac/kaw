@@ -3,8 +3,8 @@
 
 use deno_core::anyhow::Result;
 use deno_core::v8::{self, Local};
-use deno_core::{extension, op2, FastString, JsRuntime, ModuleSpecifier, RuntimeOptions};
-use std::io::{stdin, stdout, BufWriter, Write};
+use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2};
+use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
 use tokio::runtime::Builder;
 

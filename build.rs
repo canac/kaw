@@ -1,5 +1,5 @@
 use deno_core::extension;
-use deno_core::snapshot::{create_snapshot, CreateSnapshotOptions};
+use deno_core::snapshot::{CreateSnapshotOptions, create_snapshot};
 use std::env::var_os;
 use std::path::PathBuf;
 use std::{env, fs};
