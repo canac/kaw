@@ -86,13 +86,13 @@ fn test_non_array() {
 #[test]
 fn test_no_args() {
     let mut cmd = Command::cargo_bin("kaw").unwrap();
-    cmd.assert().stderr("Usage: kaw [expression]\n");
+    cmd.assert().stderr("Usage: kaw [expression] [args...]\n");
 }
 
 #[test]
-fn test_extra_arg() {
+fn test_arg() {
     let mut cmd = Command::cargo_bin("kaw").unwrap();
-    cmd.args(["stdin", "-"])
+    cmd.args(["args", "1", "2", "3"])
         .assert()
-        .stderr("Usage: kaw [expression]\n");
+        .stdout("1\n2\n3\n");
 }

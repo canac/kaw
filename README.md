@@ -19,11 +19,14 @@ cat input.txt | kaw 'stdin.filter(line => line.length > 10)'
 # Use the stdin alias "s"
 cat input.txt | kaw 's.filter(line => line.length > 10)'
 
-# Print the line number with along with each line
+# Print the line number along with each line
 cat input.txt | kaw 'stdin.map((line, index) => `${index + 1} ${line}`)'
 
 # Chain multiple transformations together
 cat input.txt | kaw 'stdin.filter(line => line.length > 10).map((line, index) => `${index + 1} ${line}`)'
+
+# Access command line arguments
+cat input.txt | kaw 'stdin.filter(line => line.startsWith(args[0]))' "$prefix"
 ```
 
 ## Expressions
@@ -31,6 +34,8 @@ cat input.txt | kaw 'stdin.filter(line => line.length > 10).map((line, index) =>
 `kaw` accepts a single argument, a JavaScript expression that manipulates lines of stdin. `kaw` exposes a global variable `stdin` (or its alias `s`) to the expression. `stdin` is an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_generators#iterables) that yields one line of stdin at a time (with newline terminators stripped from the line). `kaw` uses V8 to execute the expressions, which supports [iterator helpers](https://v8.dev/features/iterator-helpers). This means that you can use methods like `.filter` or `.map` on `stdin` as if it were an array.
 
 If the expression is iterable, `kaw` prints one line to stdout for each item. If the expression is not iterable, `kaw` simply prints the stringified result on a single line. `kaw` expressions can contain multiple lines, however the last line must evaluate to the result that should be written to stdout.
+
+Any additional arguments passed to `kaw` after the expression are available in the `args` global variable. It is an array of strings and can be used to pass a variable from a script into `kaw` without needing to deal with escaping.
 
 ## Additional examples
 
@@ -55,6 +60,9 @@ cat input.txt | kaw 'stdin.toArray().toReversed()'
 
 # Deduplicate the lines
 cat input.txt | kaw 'new Set(stdin).values()'
+
+# Access command line arguments
+cat input.txt | kaw 'stdin.filter(line => line.startsWith(args[0]) && line.endsWith(args[1]))' "$prefix" "$suffix"
 
 # Multiline expression (although at this point, you should probably just write a Deno or Node.js script)
 cat input.txt | kaw 'const map = new Map(); stdin.forEach((line) => { map.set(line, (map.get(line) ?? 0) + 1) }); map.entries().toArray().toSorted(([line1, count1], [line2, count2]) => count2 - count1).map(([line, count]) => `${count} occurrences of ${line}`)'

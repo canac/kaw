@@ -4,6 +4,7 @@
 use deno_core::anyhow::Result;
 use deno_core::v8::{self, Local};
 use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2};
+use std::env::args;
 use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
 use tokio::runtime::Builder;
@@ -23,7 +24,15 @@ fn op_stdin_line() -> Result<Option<String>> {
     Ok(Some(line))
 }
 
-extension!(kaw, ops = [op_stdin_line]);
+#[op2]
+#[serde]
+#[allow(clippy::inline_always)]
+fn op_args() -> Vec<String> {
+    // Skip the first (command) and second (expression) arguments and return the rest
+    args().skip(2).collect()
+}
+
+extension!(kaw, ops = [op_stdin_line, op_args]);
 
 #[allow(clippy::future_not_send)]
 async fn execute_expression(expression: String) -> Result<()> {
@@ -78,16 +87,12 @@ async fn execute_expression(expression: String) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let mut args = std::env::args();
-    // Skip the first arg and consume the second arg
-    if let Some(expression) = args.nth(1) {
-        // Ensure that no extra arguments were provided after the second arg
-        if args.count() == 0 {
-            let runtime = Builder::new_current_thread().enable_all().build()?;
-            return runtime.block_on(execute_expression(expression));
-        }
-    }
+    // Skip the first argument (program) and consume the next argument to get the expression
+    let Some(expression) = args().nth(1) else {
+        eprintln!("Usage: kaw [expression] [args...]");
+        exit(2);
+    };
 
-    eprintln!("Usage: kaw [expression]");
-    exit(1);
+    let runtime = Builder::new_current_thread().enable_all().build()?;
+    runtime.block_on(execute_expression(expression))
 }
