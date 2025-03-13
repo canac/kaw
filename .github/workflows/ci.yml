@@ -74,14 +74,12 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Install cross
-        if: matrix.os == 'ubuntu-latest'
-        uses: taiki-e/install-action@cross
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential gcc-multilib
 
-      - name: Build binary [Cross]
-        if: matrix.os == 'ubuntu-latest'
-        run: cross build --release --locked --target ${{ matrix.target }} --color=always --verbose
-
-      - name: Build binary [Cargo]
-        if: matrix.os != 'ubuntu-latest'
+      - name: Build binary
         run: cargo build --release --locked --target ${{ matrix.target }} --color=always --verbose
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
