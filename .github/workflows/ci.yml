@@ -74,12 +74,12 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Install build dependencies
+      - name: Configure build dependencies
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          printf '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"' > ~/.cargo/config.toml
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
       - name: Build binary
         run: cargo build --release --locked --target ${{ matrix.target }} --color=always --verbose
