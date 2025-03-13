@@ -74,20 +74,12 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      # - name: Install build dependencies
-      #   if: matrix.os == 'x86_64-unknown-linux-gnu'
-      #   run: sudo apt-get update && sudo apt-get install -y build-essential gcc-multilib
-
       - name: Install build dependencies
         if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-
-      - name: Set up cargo for aarch64
-        run: printf "[target.aarch64-unknown-linux-gnu]\nlinker = \"aarch64-linux-gnu-gcc\"" > ~/.cargo/config.toml
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          printf '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"' > ~/.cargo/config.toml
 
       - name: Build binary
         run: cargo build --release --locked --target ${{ matrix.target }} --color=always --verbose
-
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
