@@ -47,7 +47,7 @@ jobs:
       - run: cargo clippy --all-targets -- --deny warnings
 
   build:
-    name: Build (${{ matrix.os }})
+    name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
