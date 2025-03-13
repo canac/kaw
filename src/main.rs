@@ -2,6 +2,7 @@
 #![allow(clippy::significant_drop_tightening)]
 
 use deno_core::anyhow::Result;
+use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
 use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2};
 use std::env::args;
@@ -13,8 +14,7 @@ static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/KAW_S
 
 #[op2]
 #[string]
-#[allow(clippy::inline_always)]
-fn op_stdin_line() -> Result<Option<String>> {
+fn op_stdin_line() -> Result<Option<String>, CoreError> {
     let mut line = String::new();
     stdin().read_line(&mut line)?;
     if line.is_empty() {
@@ -26,7 +26,6 @@ fn op_stdin_line() -> Result<Option<String>> {
 
 #[op2]
 #[serde]
-#[allow(clippy::inline_always)]
 fn op_args() -> Vec<String> {
     // Skip the first (command) and second (expression) arguments and return the rest
     args().skip(2).collect()
@@ -56,12 +55,12 @@ async fn execute_expression(expression: String) -> Result<()> {
 
     // Check whether the result is an array or is an iterable that can be converted into an array by
     // calling toArray()
-    let to_array_key = FastString::from_static("toArray").v8_string(scope).into();
+    let to_array_key = FastString::from_static("toArray").v8_string(scope)?;
     let Some(lines_array) = local_result.try_cast::<v8::Array>().ok().or_else(|| {
         local_result
             .try_cast::<v8::Object>()
             .ok()
-            .and_then(|iterable| iterable.get(scope, to_array_key))
+            .and_then(|iterable| iterable.get(scope, to_array_key.into()))
             .and_then(|iterator| iterator.try_cast::<v8::Function>().ok())
             .and_then(|iterator_fn| iterator_fn.call(scope, local_result, &[]))
             .and_then(|iterator| iterator.try_cast::<v8::Array>().ok())
