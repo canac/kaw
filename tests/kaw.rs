@@ -12,6 +12,15 @@ fn test_noop() {
 }
 
 #[test]
+fn test_crlf() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    cmd.arg("stdin")
+        .write_stdin("Line 1\r\nLine 2\r\nLine 3\r\nLine A\r\nLine B\r\nLine C\r\n")
+        .assert()
+        .stdout("Line 1\nLine 2\nLine 3\nLine A\nLine B\nLine C\n");
+}
+
+#[test]
 fn test_abbreviation() {
     let mut cmd = Command::cargo_bin("kaw").unwrap();
     cmd.arg("s")
