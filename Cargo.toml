@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 deno_core = { version = "0.340.0", default-features = false }
-tokio = { version = "1.44.0", default-features = false }
+tokio = { version = "1.44.2", default-features = false }
 
 [dev-dependencies]
 assert_cmd = "2.0.16"
