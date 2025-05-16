@@ -14,9 +14,11 @@ static RUNTIME_SNAPSHOT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/KAW_S
 
 #[op2]
 #[string]
-fn op_stdin_line() -> Result<Option<String>, CoreError> {
+fn op_stdin_line() -> Result<Option<String>, Box<CoreError>> {
     let mut line = String::new();
-    stdin().read_line(&mut line)?;
+    if let Err(err) = stdin().read_line(&mut line) {
+        return Err(Box::new(err.into()));
+    }
     if line.is_empty() {
         return Ok(None);
     }
