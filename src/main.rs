@@ -4,7 +4,7 @@
 use deno_core::anyhow::Result;
 use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
-use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2};
+use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2, scope};
 use std::env::args;
 use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
@@ -38,7 +38,7 @@ extension!(kaw, ops = [op_stdin_line, op_args]);
 #[allow(clippy::future_not_send)]
 async fn execute_expression(expression: String) -> Result<()> {
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
-        extensions: vec![kaw::init_ops()],
+        extensions: vec![kaw::init()],
         startup_snapshot: Some(RUNTIME_SNAPSHOT),
         ..Default::default()
     });
@@ -52,7 +52,7 @@ async fn execute_expression(expression: String) -> Result<()> {
     js_runtime.mod_evaluate(internal_mod_id).await?;
 
     let global_result = js_runtime.execute_script("kaw:expression.js", expression)?;
-    let scope = &mut js_runtime.handle_scope();
+    scope!(scope, js_runtime);
     let local_result = Local::new(scope, global_result);
 
     // Check whether the result is an array or is an iterable that can be converted into an array by

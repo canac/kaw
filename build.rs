@@ -21,7 +21,7 @@ fn main() {
             cargo_manifest_dir: env!("CARGO_MANIFEST_DIR"),
             startup_snapshot: None,
             skip_op_registration: false,
-            extensions: vec![kaw::init_ops_and_esm()],
+            extensions: vec![kaw::init()],
             with_runtime_cb: None,
             extension_transpiler: None,
         },
