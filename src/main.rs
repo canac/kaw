@@ -10,7 +10,7 @@ use deno_core::anyhow::Result;
 use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
 use deno_core::{FastString, JsRuntime, RuntimeOptions, exception_to_err, extension, op2, scope};
-use std::env::args;
+use std::env::args_os;
 use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
 use tokio::runtime::Builder;
@@ -35,7 +35,10 @@ fn op_stdin_line() -> Result<Option<String>, Box<CoreError>> {
 #[serde]
 fn op_args() -> Vec<String> {
     // Skip the first (command) and second (expression) arguments and return the rest
-    args().skip(2).collect()
+    args_os()
+        .skip(2)
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect()
 }
 
 extension!(kaw, ops = [op_stdin_line, op_args]);
@@ -93,12 +96,13 @@ fn execute_expression(expression: String) -> Result<()> {
 
 fn main() -> Result<()> {
     // Skip the first argument (program) and consume the next argument to get the expression
-    let Some(expression) = args().nth(1) else {
+    let Some(expression) = args_os().nth(1) else {
         eprintln!("Usage: kaw [expression] [args...]");
         exit(2);
     };
 
     let runtime = Builder::new_current_thread().enable_all().build()?;
     let _guard = runtime.enter();
+    let expression = expression.to_string_lossy().into_owned();
     execute_expression(expression)
 }
