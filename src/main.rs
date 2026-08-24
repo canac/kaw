@@ -1,4 +1,4 @@
-#![warn(clippy::pedantic, clippy::nursery)]
+#![warn(clippy::pedantic, clippy::nursery, clippy::expect_used, clippy::unwrap_used)]
 #![allow(clippy::significant_drop_tightening)]
 
 use deno_core::anyhow::Result;
@@ -77,8 +77,9 @@ async fn execute_expression(expression: String) -> Result<()> {
     // If the result is an array, write all lines at once and only flush once
     let mut writer = BufWriter::new(stdout().lock());
     for index in 0..lines_array.length() {
-        let line = lines_array.get_index(scope, index).unwrap();
-        if !line.is_null_or_undefined() {
+        if let Some(line) = lines_array.get_index(scope, index)
+            && !line.is_null_or_undefined()
+        {
             writeln!(writer, "{}", line.to_rust_string_lossy(scope))?;
         }
     }
