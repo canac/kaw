@@ -93,6 +93,22 @@ fn test_non_array() {
 }
 
 #[test]
+fn test_throwing_callback() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    let output = cmd
+        .arg("stdin.map(line => x)")
+        .write_stdin(INPUT)
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .starts_with("Error: ReferenceError: x is not defined")
+    );
+}
+
+#[test]
 fn test_no_args() {
     let mut cmd = Command::cargo_bin("kaw").unwrap();
     cmd.assert().stderr("Usage: kaw [expression] [args...]\n");

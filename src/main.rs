@@ -9,7 +9,7 @@
 use deno_core::anyhow::Result;
 use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
-use deno_core::{FastString, JsRuntime, RuntimeOptions, extension, op2, scope};
+use deno_core::{FastString, JsRuntime, RuntimeOptions, exception_to_err, extension, op2, scope};
 use std::env::args;
 use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
@@ -49,12 +49,13 @@ fn execute_expression(expression: String) -> Result<()> {
 
     let global_result = js_runtime.execute_script("kaw:expression.js", expression)?;
     scope!(scope, js_runtime);
+    v8::tc_scope!(scope, scope);
     let local_result = Local::new(scope, global_result);
 
     // Check whether the result is an array or is an iterable that can be converted into an array by
     // calling toArray()
     let to_array_key = FastString::from_static("toArray").v8_string(scope)?;
-    let Some(lines_array) = local_result.try_cast::<v8::Array>().ok().or_else(|| {
+    let lines_array = local_result.try_cast::<v8::Array>().ok().or_else(|| {
         local_result
             .try_cast::<v8::Object>()
             .ok()
@@ -62,7 +63,13 @@ fn execute_expression(expression: String) -> Result<()> {
             .and_then(|iterator| iterator.try_cast::<v8::Function>().ok())
             .and_then(|iterator_fn| iterator_fn.call(scope, local_result, &[]))
             .and_then(|iterator| iterator.try_cast::<v8::Array>().ok())
-    }) else {
+    });
+
+    if let Some(exception) = scope.exception() {
+        return Err(exception_to_err(scope, exception, false, true).into());
+    }
+
+    let Some(lines_array) = lines_array else {
         // If the result isn't an array or an iterable, just print the result
         if !local_result.is_null_or_undefined() {
             println!("{}", local_result.to_rust_string_lossy(scope));
