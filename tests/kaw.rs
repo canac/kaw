@@ -89,7 +89,24 @@ fn test_non_array() {
     cmd.arg("({ key: 'value' })")
         .write_stdin(INPUT)
         .assert()
+        .success()
         .stdout("[object Object]\n");
+}
+
+#[test]
+fn test_throwing_callback() {
+    let mut cmd = Command::cargo_bin("kaw").unwrap();
+    let output = cmd
+        .arg("stdin.map(line => x)")
+        .write_stdin(INPUT)
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .starts_with("Error: ReferenceError: x is not defined")
+    );
 }
 
 #[test]
