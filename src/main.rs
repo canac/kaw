@@ -1,10 +1,15 @@
-#![warn(clippy::pedantic, clippy::nursery, clippy::expect_used, clippy::unwrap_used)]
+#![warn(
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::expect_used,
+    clippy::unwrap_used
+)]
 #![allow(clippy::significant_drop_tightening)]
 
 use deno_core::anyhow::Result;
 use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
-use deno_core::{FastString, JsRuntime, ModuleSpecifier, RuntimeOptions, extension, op2, scope};
+use deno_core::{FastString, JsRuntime, RuntimeOptions, extension, op2, scope};
 use std::env::args;
 use std::io::{BufWriter, Write, stdin, stdout};
 use std::process::exit;
@@ -35,21 +40,12 @@ fn op_args() -> Vec<String> {
 
 extension!(kaw, ops = [op_stdin_line, op_args]);
 
-#[allow(clippy::future_not_send)]
-async fn execute_expression(expression: String) -> Result<()> {
+fn execute_expression(expression: String) -> Result<()> {
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
         extensions: vec![kaw::init()],
         startup_snapshot: Some(RUNTIME_SNAPSHOT),
         ..Default::default()
     });
-
-    let internal_mod_id = js_runtime
-        .load_side_es_module_from_code(
-            &ModuleSpecifier::parse("kaw:runtime.js")?,
-            include_str!("./runtime.js"),
-        )
-        .await?;
-    js_runtime.mod_evaluate(internal_mod_id).await?;
 
     let global_result = js_runtime.execute_script("kaw:expression.js", expression)?;
     scope!(scope, js_runtime);
@@ -96,5 +92,6 @@ fn main() -> Result<()> {
     };
 
     let runtime = Builder::new_current_thread().enable_all().build()?;
-    runtime.block_on(execute_expression(expression))
+    let _guard = runtime.enter();
+    execute_expression(expression)
 }
