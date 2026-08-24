@@ -27,7 +27,7 @@ fn op_stdin_line() -> Result<Option<String>, Box<CoreError>> {
     if line.is_empty() {
         return Ok(None);
     }
-    line.truncate(line.trim_matches(['\r', '\n']).len());
+    line.truncate(line.trim_end_matches(['\r', '\n']).len());
     Ok(Some(line))
 }
 
