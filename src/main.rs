@@ -6,12 +6,12 @@
 )]
 #![allow(clippy::significant_drop_tightening)]
 
-use deno_core::anyhow::Result;
+use deno_core::anyhow::{Error, Result};
 use deno_core::error::CoreError;
 use deno_core::v8::{self, Local};
 use deno_core::{FastString, JsRuntime, RuntimeOptions, exception_to_err, extension, op2, scope};
 use std::env::args_os;
-use std::io::{BufWriter, Write, stdin, stdout};
+use std::io::{BufWriter, Error as IoError, ErrorKind, Write, stdin, stdout};
 use std::process::exit;
 use tokio::runtime::Builder;
 
@@ -94,6 +94,11 @@ fn execute_expression(expression: String) -> Result<()> {
     Ok(())
 }
 
+fn is_broken_pipe(err: &Error) -> bool {
+    err.downcast_ref::<IoError>()
+        .is_some_and(|err| err.kind() == ErrorKind::BrokenPipe)
+}
+
 fn main() -> Result<()> {
     // Skip the first argument (program) and consume the next argument to get the expression
     let Some(expression) = args_os().nth(1) else {
@@ -104,5 +109,8 @@ fn main() -> Result<()> {
     let runtime = Builder::new_current_thread().enable_all().build()?;
     let _guard = runtime.enter();
     let expression = expression.to_string_lossy().into_owned();
-    execute_expression(expression)
+    match execute_expression(expression) {
+        Err(err) if is_broken_pipe(&err) => Ok(()),
+        result => result,
+    }
 }
