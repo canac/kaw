@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 deno_core = { version = "0.409.0", default-features = false, features = ["reactor-tokio"] }
+deno_error = "0.7.1"
 tokio = { version = "1.52.3", default-features = false }
 
 [dev-dependencies]
