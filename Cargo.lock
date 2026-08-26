@@ -880,6 +880,7 @@ version = "0.1.6"
 dependencies = [
  "assert_cmd",
  "deno_core",
+ "deno_error",
  "tokio",
 ]
 
