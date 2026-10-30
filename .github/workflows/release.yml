@@ -11,20 +11,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # On Linux, rusty_v8 does not yet support musl, only gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
 
-          - os: macos-latest
-            target: x86_64-apple-darwin
           - os: macos-latest
             target: aarch64-apple-darwin
 
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-          - os: windows-latest
+          - os: windows-11-arm
             target: aarch64-pc-windows-msvc
     permissions:
       contents: write
@@ -47,12 +48,15 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Configure build dependencies
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+      - name: Configure musl build dependencies
+        if: endsWith(matrix.target, '-linux-musl')
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          sudo apt-get install -y musl-tools
+
+      - name: Configure aarch64 musl linker
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS=-Clink-arg=-lgcc" >> "$GITHUB_ENV"
 
       - name: Build binary
         run: cargo build --release --locked --target ${{ matrix.target }} --color=always --verbose
